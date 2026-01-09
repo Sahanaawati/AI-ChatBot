@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Chatbot</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="chat-container">
+
+    <!-- Header with logo -->
+    <div class="chat-header">
+        <!-- Place your logo inside static folder and rename to 'logo.jpeg' -->
+        <img src="{{ url_for('static', filename='logo.jpeg') }}" alt="Chatbot Logo" class="chat-logo">
+        <h2>AI Chatbot</h2>
+    </div>
+
+    <!-- Chat messages -->
+    <div id="chat"></div>
+
+    <!-- Input area -->
+    <div class="chat-input">
+        <input type="text" id="msg" placeholder="Type a message...">
+        <button onclick="send()">Send</button>
+    </div>
+
+    <!-- Export buttons -->
+    <div class="chat-exports">
+        <a href="/download/csv">Download CSV</a> |
+        <a href="/download/excel">Download Excel</a> |
+        <a href="/download/pdf">Download PDF</a>
+    </div>
+
+</div>
+
+<script>
+function send() {
+    let text = document.getElementById("msg").value;
+    if(text.trim() === "") return;
+
+    let chatBox = document.getElementById("chat");
+    chatBox.innerHTML += '<div class="message user"><b>You:</b> ' + text + '</div>';
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    // Send message to Flask backend
+    fetch("/chat", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({message: text})
+})
+
+    
+    .then(res => res.json())
+    .then(data => {
+        chatBox.innerHTML += '<div class="message bot"><b>Bot:</b> ' + data.reply + '</div>';
+        chatBox.scrollTop = chatBox.scrollHeight;
+    })
+    .catch(err => {
+        chatBox.innerHTML += '<div class="message bot" style="color:red;"><b>Bot:</b> Error connecting to server</div>';
+    });
+
+    document.getElementById("msg").value = "";
+}
+</script>
+
+</body>
+</html>
